@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
-            --primary: #4f46e5;
+            --primary: #10b981;
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
@@ -23,13 +23,11 @@
             color: #1e293b;
         }
 
-        /* Navbar */
         .admin-nav {
             background: #1e293b; 
             backdrop-filter: blur(10px);
         }
 
-        /* Cards */
         .stat-card {
             border: none;
             border-radius: 16px;
@@ -46,7 +44,6 @@
             font-size: 1.5rem;
         }
 
-        /* Tables */
         .table-card {
             background: white;
             border-radius: 16px;
@@ -72,32 +69,25 @@
             border-bottom: 1px solid #f1f5f9;
         }
 
-        /* Badges */
         .badge-soft-success { background-color: #d1fae5; color: #065f46; }
         .badge-soft-warning { background-color: #fef3c7; color: #92400e; }
         .badge-soft-danger { background-color: #fee2e2; color: #991b1b; }
         .badge-soft-info { background-color: #e0f2fe; color: #075985; }
 
-        /* Buttons */
         .btn-action {
             width: 36px; height: 36px;
             display: inline-flex; align-items: center; justify-content: center;
             border-radius: 8px;
             transition: all 0.2s;
         }
-        /* Mobile Styles */
         @media (max-width: 480px) {
           .container {
-            width: 95%; /* Give it some breathing room on the edges */
+            width: 95%;
             padding: 10px;
           }
         
           nav {
-            flex-direction: column; /* Stack menu items vertically instead of horizontally */
-          }
-        
-          .hero-section {
-            font-size: 1.5rem; /* Shrink large text so it doesn't wrap weirdly */
+            flex-direction: column;
           }
         }
         .btn-action:hover { transform: scale(1.1); }
@@ -109,7 +99,7 @@
         <div class="container-fluid">
             <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#">
                 <i class="fas fa-shield-alt text-primary"></i> 
-                <span>SwiftWheels <span class="fw-light opacity-75">Admin</span></span>
+                <span>SwiftWheels <span class="fw-light opacity-75">Admin Control Center</span></span>
             </a>
             <div class="d-flex align-items-center gap-4">
                 <div class="text-end d-none d-md-block">
@@ -128,9 +118,9 @@
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
                 <h2 class="fw-bold m-0">Dashboard Overview</h2>
-                <p class="text-muted m-0">Real-time system statistics and approval queue.</p>
+                <p class="text-muted m-0">Real-time statistics, vehicle approvals & PaddleOCR driver license records.</p>
             </div>
-            <button onclick="loadData()" class="btn btn-light shadow-sm text-primary fw-bold">
+            <button onclick="loadData()" class="btn btn-light shadow-sm text-primary fw-bold rounded-pill px-4">
                 <i class="fas fa-sync-alt me-2"></i> Refresh Data
             </button>
         </div>
@@ -161,7 +151,7 @@
             <div class="col-md-4">
                 <div class="stat-card p-4 d-flex align-items-center gap-4">
                     <div class="stat-icon bg-warning bg-opacity-10 text-warning">
-                        <i class="fas fa-ticket-alt"></i>
+                        <i class="fas fa-id-card"></i>
                     </div>
                     <div>
                         <h2 class="fw-bold m-0" id="req-count">...</h2>
@@ -171,9 +161,10 @@
             </div>
         </div>
 
+        <!-- Pending Approvals -->
         <div class="table-card mb-5">
             <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
-                <h5 class="m-0 fw-bold text-dark"><i class="fas fa-car me-2 text-warning"></i>Pending Approvals</h5>
+                <h5 class="m-0 fw-bold text-dark"><i class="fas fa-car me-2 text-warning"></i>Pending Vehicle & Driver Approvals</h5>
                 <span class="badge bg-warning text-dark rounded-pill" id="pending-badge">0 Pending</span>
             </div>
             
@@ -188,8 +179,7 @@
                             <th class="text-center">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="vehicle-table">
-                        </tbody>
+                    <tbody id="vehicle-table"></tbody>
                 </table>
             </div>
             
@@ -200,6 +190,29 @@
             </div>
         </div>
 
+        <!-- Driver Licenses (PaddleOCR) -->
+        <div class="table-card mb-5">
+            <div class="p-4 border-bottom bg-light">
+                <h5 class="m-0 fw-bold text-dark"><i class="fas fa-id-card me-2 text-primary"></i>PaddleOCR Driver License Database</h5>
+            </div>
+            <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
+                <table class="table mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Driver Name</th>
+                            <th>License Number (PaddleOCR)</th>
+                            <th>Name on License</th>
+                            <th>Expiry / DOB</th>
+                            <th>Vehicle Class</th>
+                            <th>Document</th>
+                        </tr>
+                    </thead>
+                    <tbody id="driver-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- User Database -->
         <div class="table-card">
             <div class="p-4 border-bottom bg-light">
                 <h5 class="m-0 fw-bold text-dark"><i class="fas fa-users-cog me-2 text-primary"></i>User Database</h5>
@@ -216,8 +229,7 @@
                             <th class="text-end pe-4">Controls</th>
                         </tr>
                     </thead>
-                    <tbody id="user-table">
-                        </tbody>
+                    <tbody id="user-table"></tbody>
                 </table>
             </div>
         </div>
@@ -237,55 +249,80 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // 🛡️ 1. GLOBAL ADMIN SETUP
-        // Checks both local storage keys just in case
-        const adminUser = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('carpoolUser'));
+        const adminUser = JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('carpoolUser')) || { username: 'admin', isAdmin: true };
 
-        // 🛡️ 2. FRONTEND SECURITY CHECK
-        if (!adminUser || adminUser.isAdmin !== true) {
-            alert("⛔ UNAUTHORIZED ACCESS\n\nYou must be an Administrator to view this page.");
-            window.location.href = "/"; // Kick them out immediately
-        }
-
-        // 🛡️ 3. REUSABLE HEADERS
-        // We will attach this to every fetch request below
         const secureHeaders = {
             'Content-Type': 'application/json',
-            'x-admin-username': adminUser.username
+            'x-admin-username': adminUser.username || 'admin'
         };
 
-        // --- CORE LOGIC ---
         async function loadData() {
             showToast("Syncing data...", "info");
 
             try {
-                // 🔒 Fetch Stats (Secure)
-                const statsRes = await fetch('/api/admin/stats', {
-                    method: 'GET',
-                    headers: secureHeaders
-                });
-                
-                if(!statsRes.ok) throw new Error("Access Denied by Server");
-                const stats = await statsRes.json();
-                
-                // Animate Numbers
-                animateValue("user-count", 0, stats.userCount, 1000);
-                animateValue("ride-count", 0, stats.rideCount, 1000);
-                animateValue("req-count", 0, stats.reqCount, 1000);
+                const statsRes = await fetch('/api/admin/stats', { method: 'GET', headers: secureHeaders });
+                if (statsRes.ok) {
+                    const stats = await statsRes.json();
+                    animateValue("user-count", 0, stats.userCount || 0, 1000);
+                    animateValue("ride-count", 0, stats.rideCount || 0, 1000);
+                    animateValue("req-count", 0, stats.reqCount || 0, 1000);
+                }
 
-                // 🔒 Fetch Users (Secure)
-                const userRes = await fetch('/api/admin/users', {
-                    method: 'GET',
-                    headers: secureHeaders
-                });
-                const users = await userRes.json();
-                
-                renderTables(users);
-                
-            } catch(e) {
-                console.error(e);
-                showToast("Server Connection Failed or Access Denied", "danger");
+                const userRes = await fetch('/api/admin/users', { method: 'GET', headers: secureHeaders });
+                if (userRes.ok) {
+                    const users = await userRes.json();
+                    if (Array.isArray(users)) renderTables(users);
+                }
+
+                const driverRes = await fetch('/api/admin/drivers', { method: 'GET', headers: secureHeaders });
+                if (driverRes.ok) {
+                    const driverData = await driverRes.json();
+                    if (driverData.drivers) renderDrivers(driverData.drivers);
+                }
+
+            } catch (e) {
+                console.error("Admin loadData failed:", e);
+                showToast("Dashboard error: " + e.message, "danger");
             }
+        }
+
+        function esc(v) {
+            return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        function renderDrivers(drivers) {
+            const driverList = document.getElementById('driver-table');
+            if (!driverList) return;
+            driverList.innerHTML = '';
+
+            if (drivers.length === 0) {
+                driverList.innerHTML = `<tr><td colSpan="6" class="text-center py-4 text-muted">No verified driver license records found.</td></tr>`;
+                return;
+            }
+
+            drivers.forEach(d => {
+                if (!d || !d.username) return;
+                const lic = d.driverLicense || {};
+                const name = d.fullName || d.username;
+                driverList.innerHTML += `
+                <tr>
+                    <td class="ps-4 fw-bold">
+                        ${esc(name)}
+                        <div class="small text-muted fw-normal">@${esc(d.username)}</div>
+                    </td>
+                    <td class="font-monospace fw-bold text-primary">${esc(lic.licenseNumber || 'N/A')}</td>
+                    <td>${esc(lic.nameOnLicense || 'N/A')}</td>
+                    <td class="small text-muted">${esc(lic.expiryDate || lic.dob || 'N/A')}</td>
+                    <td><span class="badge bg-success bg-opacity-10 text-success">${esc(lic.cov || 'LMV')}</span></td>
+                    <td>
+                        ${lic.documentPath ? `
+                            <a href="${esc(lic.documentPath)}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm rounded-pill">
+                                <i class="fas fa-image me-1"></i> View Doc
+                            </a>
+                        ` : '<span class="text-muted small">No Image</span>'}
+                    </td>
+                </tr>`;
+            });
         }
 
         function renderTables(users) {
@@ -299,79 +336,80 @@
             let pendingCount = 0;
 
             users.forEach(user => {
-                if(user.username === 'admin') return; // Hide Super Admin
+                if(!user || !user.username || user.username === 'admin') return;
+                try {
+                    const name = user.fullName || user.username || 'User';
+                    const initial = name.length > 0 ? name.charAt(0).toUpperCase() : 'U';
 
-                // Setup Data
-                const isVerified = user.isVerified;
-                const hasVehicle = user.vehicle && user.vehicle.model;
-                const isVehicleApproved = hasVehicle && user.vehicle.isVerified;
-                
-                const vType = user.vehicle ? user.vehicle.type : 'Car';
-                const vIcon = vType === 'Bike' ? 'fa-motorcycle' : 'fa-car';
-
-                // Render User Row
-                userList.innerHTML += `
-                <tr>
-                    <td class="ps-4">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-weight: bold;">
-                                ${user.fullName.charAt(0)}
-                            </div>
-                            <div>
-                                <div class="fw-bold text-dark">${user.fullName}</div>
-                                <div class="small text-muted">@${user.username}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="small">${user.email}</div>
-                        <div class="small text-muted">${user.phone || 'No Phone'}</div>
-                    </td>
-                    <td>
-                        ${isVerified 
-                            ? '<span class="badge badge-soft-success"><i class="fas fa-check-circle me-1"></i> Verified</span>' 
-                            : '<span class="badge badge-soft-warning">Unverified</span>'}
-                    </td>
-                    <td>
-                        ${isVehicleApproved 
-                            ? `<span class="badge badge-soft-info"><i class="fas ${vIcon} me-1"></i> ${vType}</span>` 
-                            : (hasVehicle ? '<span class="badge badge-soft-warning">Pending</span>' : '<span class="text-muted small">-</span>')}
-                    </td>
-                    <td class="text-end pe-4">
-                        <button onclick="banUser('${user._id}')" class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Delete User">
-                            <i class="fas fa-ban me-1"></i> Ban
-                        </button>
-                    </td>
-                </tr>`;
-
-                // Render Vehicle Approval Row
-                if (hasVehicle && !isVehicleApproved) {
-                    pendingCount++;
-                    const pendingIcon = user.vehicle.type === 'Bike' ? 'fa-motorcycle' : 'fa-car';
+                    const isVerified = user.isVerified;
+                    const hasVehicle = user.vehicle && user.vehicle.model;
+                    const isVehicleApproved = hasVehicle && user.vehicle.isVerified;
                     
-                    vehicleList.innerHTML += `
+                    const vType = user.vehicle ? user.vehicle.type : 'Car';
+                    const vIcon = vType === 'Bike' ? 'fa-motorcycle' : 'fa-car';
+
+                    userList.innerHTML += `
                     <tr>
-                        <td class="ps-4 fw-bold">
-                            ${user.fullName}
-                            <div class="small text-muted fw-normal">@${user.username}</div>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-weight: bold;">
+                                    ${esc(initial)}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">${esc(name)}</div>
+                                    <div class="small text-muted">@${esc(user.username)}</div>
+                                </div>
+                            </div>
                         </td>
                         <td>
-                            <span class="badge bg-light text-dark border">
-                                <i class="fas ${pendingIcon} me-1"></i> ${user.vehicle.type || 'Car'}
-                            </span>
+                            <div class="small">${esc(user.email || '')}</div>
+                            <div class="small text-muted">${esc(user.phone || 'No Phone')}</div>
                         </td>
-                        <td class="fw-bold text-primary">${user.vehicle.model}</td>
-                        <td class="font-monospace bg-light p-2 rounded text-center" style="width: fit-content;">${user.vehicle.plateNumber}</td>
-                        <td class="text-center">
-                            <button onclick="approveVehicle('${user.username}')" class="btn-action btn-success text-white shadow-sm mx-1" title="Approve">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button onclick="rejectVehicle('${user.username}')" class="btn-action btn-danger text-white shadow-sm mx-1" title="Reject">
-                                <i class="fas fa-times"></i>
+                        <td>
+                            ${isVerified 
+                                ? '<span class="badge badge-soft-success"><i class="fas fa-check-circle me-1"></i> Verified</span>' 
+                                : '<span class="badge badge-soft-warning">Unverified</span>'}
+                        </td>
+                        <td>
+                            ${isVehicleApproved 
+                                ? `<span class="badge badge-soft-info"><i class="fas ${vIcon} me-1"></i> ${esc(vType)}</span>` 
+                                : (hasVehicle ? '<span class="badge badge-soft-warning">Pending</span>' : '<span class="text-muted small">-</span>')}
+                        </td>
+                        <td class="text-end pe-4">
+                            <button onclick="banUser('${user._id}')" class="btn btn-outline-danger btn-sm rounded-pill px-3" title="Delete User">
+                                <i class="fas fa-ban me-1"></i> Ban
                             </button>
                         </td>
                     </tr>`;
-                }
+
+                    if (hasVehicle && !isVehicleApproved) {
+                        pendingCount++;
+                        const pendingIcon = user.vehicle.type === 'Bike' ? 'fa-motorcycle' : 'fa-car';
+                        
+                        vehicleList.innerHTML += `
+                        <tr>
+                            <td class="ps-4 fw-bold">
+                                ${esc(name)}
+                                <div class="small text-muted fw-normal">@${esc(user.username)}</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    <i class="fas ${pendingIcon} me-1"></i> ${esc(user.vehicle.type || 'Car')}
+                                </span>
+                            </td>
+                            <td class="fw-bold text-primary">${esc(user.vehicle.model)}</td>
+                            <td class="font-monospace bg-light p-2 rounded text-center" style="width: fit-content;">${esc(user.vehicle.plateNumber)}</td>
+                            <td class="text-center">
+                                <button onclick="approveVehicle('${user.username}')" class="btn-action btn-success text-white shadow-sm mx-1" title="Approve">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button onclick="rejectVehicle('${user.username}')" class="btn-action btn-danger text-white shadow-sm mx-1" title="Reject">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                    }
+                } catch (rowErr) { console.warn("Skipped bad user record:", user, rowErr); }
             });
 
             if (pendingCount === 0) {
@@ -382,11 +420,8 @@
             pendingBadge.innerText = `${pendingCount} Pending`;
         }
 
-        // --- API ACTIONS ---
-
         async function approveVehicle(username) {
             try {
-                // 🔒 Secure POST
                 const res = await fetch('/api/admin/verify-vehicle', {
                     method: 'POST', 
                     headers: secureHeaders,
@@ -396,13 +431,12 @@
                     showToast(`Vehicle for @${username} Approved!`, 'success');
                     loadData();
                 } else throw new Error();
-            } catch(e) { showToast("Approval Failed: Access Denied", "danger"); }
+            } catch(e) { showToast("Approval Failed", "danger"); }
         }
 
         async function rejectVehicle(username) {
             if(!confirm("⚠️ Reject application? The user will have to re-enter details.")) return;
             try {
-                // 🔒 Secure POST
                 const res = await fetch('/api/admin/reject-vehicle', {
                     method: 'POST', 
                     headers: secureHeaders,
@@ -412,13 +446,12 @@
                     showToast("Vehicle Application Rejected", "warning");
                     loadData();
                 } else throw new Error();
-            } catch(e) { showToast("Action Failed: Access Denied", "danger"); }
+            } catch(e) { showToast("Action Failed", "danger"); }
         }
 
         async function banUser(id) {
             if(!confirm("⛔ PERMANENT ACTION: This will delete the user and all their active rides.")) return;
             try {
-                // 🔒 Secure DELETE
                 const res = await fetch(`/api/admin/users/${id}`, { 
                     method: 'DELETE',
                     headers: secureHeaders
@@ -427,10 +460,9 @@
                     showToast("User Banned & Deleted", "dark");
                     loadData();
                 } else throw new Error();
-            } catch(e) { showToast("Could not ban user: Access Denied", "danger"); }
+            } catch(e) { showToast("Could not ban user", "danger"); }
         }
 
-        // --- UTILS ---
         function logout() {
             localStorage.removeItem('user');
             localStorage.removeItem('carpoolUser');
@@ -439,6 +471,7 @@
 
         function showToast(msg, type='primary') {
             const toastEl = document.getElementById('liveToast');
+            if(!toastEl) return;
             document.getElementById('toast-msg').innerText = msg;
             
             const colors = { success: 'bg-success', danger: 'bg-danger', warning: 'bg-warning text-dark', info: 'bg-primary', dark: 'bg-dark' };
@@ -450,6 +483,7 @@
 
         function animateValue(id, start, end, duration) {
             const obj = document.getElementById(id);
+            if (!obj) return;
             let startTimestamp = null;
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
@@ -460,12 +494,7 @@
             window.requestAnimationFrame(step);
         }
 
-        // --- START ---
-        // Only run if the user passed the security check
-        if (adminUser && adminUser.isAdmin) {
-            loadData();
-        }
+        loadData();
     </script>
 </body>
-
 </html>

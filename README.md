@@ -85,3 +85,38 @@ SwiftWheels/
 ├── .gitignore          # Files to ignore (node_modules, .env)
 └── README.md           # Project Documentation
 # Internship-Project
+
+---
+
+## 🧠 Ride-Pooling Engine
+
+- **Batching** (`utils/batcher.js`, `utils/poolPlanner.js`): requests are grouped into fixed 15-second windows and pooled greedily into feasible groups of up to 4.
+- **Routing** (`utils/vrptw.js`): exact branch-and-bound VRPTW. Enforces precedence, capacity, time windows, and a hard **15% detour bound** for every passenger. Verified against brute force in `tests/algorithm.test.js`.
+- **Fare split** (`utils/shapley.js`, `utils/fareSplit.js`): Shapley value cost sharing. Shares add up exactly to the ride price, and nobody pays more than their solo fare. Verified in `tests/fare.test.js`.
+- **Acceptance gate**: a driver cannot accept a passenger if it would push a co-passenger past 15% or break a time window.
+
+## 🛡️ Safety
+
+- Women-only rides (only passengers with gender set to female can book).
+- Emergency contacts (up to 3) and an SOS alert that is recorded and emailed to admin and to contacts with email.
+- Shareable live-trip link for family and friends (`/share/<token>`), which shows no phone numbers or emails.
+
+## 🪪 Driver Verification
+
+One rule everywhere: a driver can post rides only after an **admin approves both the driving license and the vehicle**. OCR only submits details for review. Rejections include a reason the driver can see.
+
+## Commands
+
+```bash
+npm install
+npm test            # algorithm, fare, distance and dispatch tests
+npm run build       # rebuild the frontend into public/
+npm run seed        # demo accounts, a ride and waiting commuters (password Demo@123)
+npm start           # run the server on http://localhost:3000
+```
+
+See `DEMO_AND_PRESENTATION.md` for the demo script and judging notes.
+
+## 🔁 Shared Rides
+
+Commuters post a request. A background worker runs every 15 seconds, pools waiting requests on overlapping routes (detour within 15%, pickup windows respected, women-only pools single-gender), and publishes open pools. Approved drivers accept a pool, which creates the ride and one booking per commuter.

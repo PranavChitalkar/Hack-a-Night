@@ -8,6 +8,11 @@ const authRoutes = require('./routes/auth');
 const rideRoutes = require('./routes/rides');
 const requestRoutes = require('./routes/requests'); // 🆕 Added
 const adminRoutes = require('./routes/admin');      // 🆕 Added
+const driverRoutes = require('./routes/driver');    // 🪪 PaddleOCR Driver Verification
+const batchRoutes = require('./routes/batch');      // 🧮 VRPTW & Shapley Batch Engine
+const poolRoutes = require('./routes/pools');        // 🔁 Shared-ride requests and pools
+const { startDispatchWorker } = require('./utils/dispatchWorker');
+const safetyRoutes = require('./routes/safety');    // 🛡️ Safety: SOS, contacts, trip sharing
 
 const User = require('./models/User');
 const Ride = require('./models/Ride');
@@ -20,7 +25,7 @@ app.use(express.json());
 // 🗄️ DATABASE SETUP
 // ==========================
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("🚀 Success: Connected to MongoDB!"))
+  .then(() => { console.log("🚀 Success: Connected to MongoDB!"); startDispatchWorker(); })
   .catch(err => console.error("❌ MongoDB connection error:", err));
 
 // ==========================
@@ -36,6 +41,24 @@ app.use('/api', authRoutes);
 app.use('/api', rideRoutes);
 app.use('/api', requestRoutes); 
 app.use('/api', adminRoutes);   
+app.use('/api', driverRoutes);   
+app.use('/api', batchRoutes);   
+app.use('/api', safetyRoutes);
+app.use('/api', poolRoutes);
+
+// Serve uploaded license documents statically
+app.use('/uploads', express.static(__dirname + '/public/uploads'));
+
+// SPA Catch-all route for React routing
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+        return next();
+    }
+    if (req.method === 'GET') {
+        return res.sendFile(__dirname + '/public/index.html');
+    }
+    next();
+});   
 
 // ==========================
 // 👤 USER PROFILE & MISC ROUTES (Left here for simplicity)
@@ -59,9 +82,9 @@ app.post('/api/user/vehicle', async (req, res) => {
     try {
         const { username, model, plateNumber, type } = req.body; 
         const user = await User.findOneAndUpdate(
-            { username }, { vehicle: { model, plateNumber, type, isVerified: false } }, { new: true }
+            { username }, { vehicle: { model, plateNumber, type, status: 'pending', reviewNote: '', isVerified: false } }, { new: true }
         ).lean();
-        res.json({ message: "Vehicle details submitted!", user });
+        res.json({ message: "Vehicle details submitted for admin review.", user });
     } catch (err) { res.status(500).json({ error: "Update failed" }); }
 });
 

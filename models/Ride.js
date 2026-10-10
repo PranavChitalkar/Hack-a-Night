@@ -30,7 +30,12 @@ const rideSchema = new mongoose.Schema({
 
     paymentStatus: { type: String, default: 'pending' }, // 'pending' or 'paid'
     
-    status: { type: String, default: 'scheduled' }
+    status: { type: String, default: 'scheduled' }, // 'scheduled', 'active', 'completed', 'cancelled'
+    cancelledBy: { type: String, default: "" },
+    cancellationPenalty: { type: Number, default: 0 },
+    womenOnly: { type: Boolean, default: false }, // only female passengers may book
+    distanceKm: { type: Number },   // straight-line km between from and to, computed by the server
+    ratePerKm: { type: Number },    // ₹ per km used to compute the price
 });
 
 module.exports = mongoose.model('Ride', rideSchema);
